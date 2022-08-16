@@ -1,2 +1,2 @@
 # LuckSecure
-Secure LuckPerm group with 2AF through discord
+Secure LuckPerm group with A2F through discord

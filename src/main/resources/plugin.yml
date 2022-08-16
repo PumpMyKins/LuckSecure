@@ -1,0 +1,8 @@
+name: ${project.name}
+main: fr.pmk.lucksecure.MainLuckSecure
+version: ${project.version}
+author: Clem_Fern
+depend: ["LuckPerms"]
+commands:
+  lsauth:
+    description: LuckSecure Authentification Command
