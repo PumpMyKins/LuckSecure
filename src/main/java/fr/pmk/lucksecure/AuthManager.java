@@ -1,4 +1,4 @@
-package fr.pmk;
+package fr.pmk.lucksecure;
 
 import java.util.ArrayList;
 import java.util.HashMap;

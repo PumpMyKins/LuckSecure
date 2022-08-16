@@ -1,4 +1,4 @@
-package fr.pmk;
+package fr.pmk.lucksecure;
 
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;

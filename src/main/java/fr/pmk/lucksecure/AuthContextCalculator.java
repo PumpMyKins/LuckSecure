@@ -1,4 +1,4 @@
-package fr.pmk;
+package fr.pmk.lucksecure;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 

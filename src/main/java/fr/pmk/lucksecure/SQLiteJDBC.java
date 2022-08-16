@@ -1,8 +1,9 @@
-package fr.pmk;
+package fr.pmk.lucksecure;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class SQLiteJDBC {
 
@@ -21,8 +22,16 @@ public class SQLiteJDBC {
         MainLuckSecure.LOGGER.fine("Closed database successfully");
     }
 
-    private void setup() {
-        // TODO : CREATE TABLE IF NOT EXIST
+    private void setup() throws SQLException {
+        Statement stmt = this.connection.createStatement();
+        try {
+            stmt.execute("CREATE TABLE IF NOT EXISTS TOKENS " +
+            "(UUID INT PRIMARY KEY     NOT NULL," +
+            " TOKEN          TEXT    NOT NULL)"
+            );
+        } finally {
+            stmt.close();
+        }
     }
 
     /*

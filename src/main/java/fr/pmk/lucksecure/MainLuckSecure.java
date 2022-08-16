@@ -1,4 +1,4 @@
-package fr.pmk;
+package fr.pmk.lucksecure;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
