@@ -1,6 +1,10 @@
 # LuckSecure
 *This is a bungeecord plugin. Depends on [LuckPerms](https://github.com/LuckPerms/LuckPerms)*
 
+![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/PumpMyKins/LuckSecure/maven.yml?branch=main)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/PumpMyKins/LuckSecure)
+![GitHub](https://img.shields.io/github/license/PumpMyKins/LuckSecure)
+
 #### This plugin aims to increase security by adding a custom luckperms context named `lucksecure` . A user with a group/permission in need of the `authenticated` context will have to authenticate himself with a time-based one-time password (Google Authenticator/Microsoft Authenticator & etc...).
 
 ---
