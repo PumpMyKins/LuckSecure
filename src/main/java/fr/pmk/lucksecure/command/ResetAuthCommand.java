@@ -1,9 +1,13 @@
-package fr.pmk.lucksecure;
+package fr.pmk.lucksecure.command;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
 
+import fr.pmk.lucksecure.AuthManager;
+import fr.pmk.lucksecure.MainLuckSecure;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
@@ -39,14 +43,15 @@ public class ResetAuthCommand extends Command {
             }
 
             try {
-                if (manager.deleteUserTokenA2F(playerName)) {
-                    sender.sendMessage(new TextComponent("§l§f[§r§bLuck§3Secure§l§f]§r §3> §bA2F reset succeed."));
+                if (manager.deleteUserToken2AF(playerName)) {
+                    sender.sendMessage(new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append("2AF setup reset succeed for ").color(ChatColor.AQUA).append(playerName).color(ChatColor.WHITE).append(".").color(ChatColor.AQUA).create());
                 } else {
-                    sender.sendMessage(new TextComponent("§l§f[§r§bLuck§3Secure§l§f]§r §3> §cNo A2F found for this player name or UUID."));
+                    sender.sendMessage(new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append("No 2AF setup found for this player name or UUID.").color(ChatColor.RED).create());
+
                 }
             } catch (SQLException e) {
-                sender.sendMessage(new TextComponent("§l§f[§r§bLuck§3Secure§l§f]§r §3> §cUnhandled exception... contact server admin."));
-                MainLuckSecure.LOGGER.severe("Exception on user A2F setup verification !");
+                sender.sendMessage(MainLuckSecure.UNHANDLED_EXCEPTION_BASE_COMPONENTS);
+                MainLuckSecure.LOGGER.severe("Exception on user 2AF setup deleting !");
                 MainLuckSecure.LOGGER.log(Level.SEVERE, e.getMessage(), e);
             }
 
@@ -57,8 +62,8 @@ public class ResetAuthCommand extends Command {
     }
 
     public static void help(CommandSender sender) {
-        sender.sendMessage(new TextComponent("§l§f[§r§bLuck§3Secure§l§f]§r §3> §cReset the A2F of a player"));
-        sender.sendMessage(new TextComponent("§l§f[§r§bLuck§3Secure§l§f]§r §3> §bUse : §a/lsauth-reset {player/uuid}"));
+        sender.sendMessage(new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append("Reset the 2AF setup of a player").color(ChatColor.RED).create());
+        sender.sendMessage(new ComponentBuilder().append(MainLuckSecure.COMMAND_USAGE_BASE_COMPONENTS).append("/lsauth-reset {player/uuid}").color(ChatColor.GREEN).create());
     }
     
 }

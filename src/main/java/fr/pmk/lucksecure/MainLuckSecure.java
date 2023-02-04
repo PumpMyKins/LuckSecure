@@ -5,13 +5,27 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.checkerframework.checker.units.qual.C;
+
+import fr.pmk.lucksecure.command.AuthCommand;
+import fr.pmk.lucksecure.command.ResetAuthCommand;
+import fr.pmk.lucksecure.command.StatusAuthCommand;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.plugin.Plugin;
 
 public class MainLuckSecure extends Plugin {
+
+    // TEXT COMPONENT
+    public final static BaseComponent[] LUCKSECURE_BASE_COMPONENTS = new ComponentBuilder().append("[").color(ChatColor.WHITE).bold(true).append("Luck").bold(false).color(ChatColor.AQUA).append("Secure").color(ChatColor.DARK_AQUA).append("]").color(ChatColor.WHITE).bold(true).append(" > ").bold(false).color(ChatColor.DARK_AQUA).create();
+    public final static BaseComponent[] COMMAND_USAGE_BASE_COMPONENTS = new ComponentBuilder().append(LUCKSECURE_BASE_COMPONENTS).append("Use : ").color(ChatColor.AQUA).create();
+    public final static BaseComponent[] UNHANDLED_EXCEPTION_BASE_COMPONENTS = new ComponentBuilder().append(LUCKSECURE_BASE_COMPONENTS).append("Unhandled exception... contact server admin.").color(ChatColor.RED).create();
+
     // LOGGER
-    protected static Logger LOGGER;
+    public static Logger LOGGER;
 
     private LuckPerms luckPerms;
     private SQLiteJDBC bdd;
@@ -41,10 +55,11 @@ public class MainLuckSecure extends Plugin {
         AuthManager manager = new AuthManager(this);
         AuthContextCalculator calculator = new AuthContextCalculator(manager);
 
-        luckPerms.getContextManager().registerCalculator(calculator); // REGISTER A2F Context
+        luckPerms.getContextManager().registerCalculator(calculator); // REGISTER 2AF Context
 
         this.getProxy().getPluginManager().registerCommand(this, new AuthCommand(manager)); // REGISTER AUTH COMMAND
         this.getProxy().getPluginManager().registerCommand(this, new ResetAuthCommand(this, manager)); // REGISTER AUTH COMMAND
+        this.getProxy().getPluginManager().registerCommand(this, new StatusAuthCommand(this, manager)); // REGISTER AUTH COMMAND
 
         LOGGER.info("Successfully enabled.");
 

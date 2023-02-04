@@ -7,4 +7,6 @@ commands:
   lsauth:
     description: LuckSecure Authentication Command
   lsauth-reset:
-    description: LuckSecure Reset Player Authentication Command
+    description: LuckSecure Reset 2AF Player Command
+  lsauth-status:
+    description: LuckSecure Display 2AF Player Status Command
