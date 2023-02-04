@@ -5,8 +5,6 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.checkerframework.checker.units.qual.C;
-
 import fr.pmk.lucksecure.command.AuthCommand;
 import fr.pmk.lucksecure.command.ResetAuthCommand;
 import fr.pmk.lucksecure.command.StatusAuthCommand;

@@ -66,6 +66,7 @@ public class AuthCommand extends Command {
                 } else {
                     String key = manager.generateUserToken2AF(player);
                     String url = AuthManager.generateUserTokenUrl(player.getDisplayName(), key, player.getDisplayName() + " - LuckSecure@" + ProxyServer.getInstance().getName());
+                    @SuppressWarnings("deprecation")
                     BaseComponent[] urlTextComponent = new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append("Import the key:").color(ChatColor.AQUA)
                     .append(key).bold(true)
                     .append(" or scan the ").color(ChatColor.AQUA)
