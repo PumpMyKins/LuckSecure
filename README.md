@@ -1,7 +1,7 @@
 # LuckSecure
 *This is a bungeecord plugin. Depends on [LuckPerms](https://github.com/LuckPerms/LuckPerms)*
 
-#### This plugin aims to increase security by adding a custom luckperms context named `lucksecure` . A user with a group/permission in need of the `authenticated` context will have to authenticate himself with a time-based one-time password (Google Authenticator/Microsoft Authenticator & etc...) .
+#### This plugin aims to increase security by adding a custom luckperms context named `lucksecure` . A user with a group/permission in need of the `authenticated` context will have to authenticate himself with a time-based one-time password (Google Authenticator/Microsoft Authenticator & etc...).
 
 ---
 
@@ -26,3 +26,15 @@ lsauth | none | On the first use, it will generate a totp key and qrcode
 lsauth {code} | none | Use this command to authenticate yourself with your TOTP code
 lsauth-status {player} | lsauth.cmd | Display the authentication status
 lsauth-reset {player/uuid} | none | Reset the totp key of a player (Usable in the bungeecord console only)
+
+
+### How to build :
+```
+git clone https://github.com/PumpMyKins/LuckSecure.git
+cd LuckSecure
+mvn package
+```
+
+### TODO
+- kick timer on join
+- custom totp key length
