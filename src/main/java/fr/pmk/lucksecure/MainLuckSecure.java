@@ -1,5 +1,6 @@
 package fr.pmk.lucksecure;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,9 +23,15 @@ public class MainLuckSecure extends Plugin {
         // RETREIVE LUCKPERMS API
         this.luckPerms = LuckPermsProvider.get();
 
+        // CONFIG FOLDER
+        if (!getDataFolder().exists()) {
+            LOGGER.info("Created config folder: " + getDataFolder().mkdir());
+         }
+
         // INIT SQLite DB
         try {
-            this.bdd = new SQLiteJDBC("jdbc:sqlite:" + getDataFolder() + "totp.db");
+            File db = new File(getDataFolder(), "totp.db");
+            this.bdd = new SQLiteJDBC("jdbc:sqlite:" + db.toPath());
         } catch (ClassNotFoundException | SQLException e) {
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
             return;
@@ -37,6 +44,9 @@ public class MainLuckSecure extends Plugin {
         luckPerms.getContextManager().registerCalculator(calculator); // REGISTER A2F Context
 
         this.getProxy().getPluginManager().registerCommand(this, new AuthCommand(manager)); // REGISTER AUTH COMMAND
+        this.getProxy().getPluginManager().registerCommand(this, new ResetAuthCommand(this, manager)); // REGISTER AUTH COMMAND
+
+        LOGGER.info("Successfully enabled.");
 
     }
 

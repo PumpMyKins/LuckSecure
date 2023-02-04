@@ -10,8 +10,8 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 public class AuthContextCalculator implements ContextCalculator<ProxiedPlayer> {
 
-    private static final String KEY = "lucksecure";
-    private static final String AUTH = "authenticated";
+    public static final String KEY = "lucksecure";
+    public static final String AUTH = "authenticated";
     private static final String NOT_AUTH = "not-authenticated";
 
     private AuthManager authManager;

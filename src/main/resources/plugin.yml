@@ -5,4 +5,6 @@ author: Clem_Fern
 depend: ["LuckPerms"]
 commands:
   lsauth:
-    description: LuckSecure Authentification Command
+    description: LuckSecure Authentication Command
+  lsauth-reset:
+    description: LuckSecure Reset Player Authentication Command
