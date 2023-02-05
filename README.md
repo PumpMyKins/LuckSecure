@@ -42,3 +42,5 @@ lucksecure | authenticated | After a valid authentication with lsauth
 ```
 git clone https://github.com/PumpMyKins/LuckSecure.git
 cd LuckSecureauthenticated
+mvn package
+```
