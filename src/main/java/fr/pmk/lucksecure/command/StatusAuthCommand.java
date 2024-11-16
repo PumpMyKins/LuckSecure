@@ -1,55 +1,77 @@
 package fr.pmk.lucksecure.command;
 
+import java.sql.SQLException;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import fr.pmk.lucksecure.AuthManager;
-import fr.pmk.lucksecure.MainLuckSecure;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Command;
 
-public class StatusAuthCommand extends Command {
+public class StatusAuthCommand<S, P extends S, M extends AuthManager<P, ?>, A extends ICommandAdapter<S, P>> {
+    
+    private Logger logger;
+    private M manager;
+    private A adapter;
 
-    private MainLuckSecure main;
-    private AuthManager manager;
-
-    public StatusAuthCommand(MainLuckSecure main, AuthManager manager) {
-        super("lsauth-status", "lsauth.cmd");
-        this.main = main;
+    public StatusAuthCommand(Logger logger, M manager, A adapter) {
+        this.logger = logger;
         this.manager = manager;
+        this.adapter = adapter;
     }
 
-    @Override
-    public void execute(CommandSender sender, String[] args) {
+    public boolean execute(S sender, String[] args) {
         if (args.length == 1) {
             String playerName = args[0];
 
             if (playerName.trim().isEmpty()) {
                 help(sender);
-                return;
+                return false;
             }
 
-            ProxiedPlayer player = main.getProxy().getPlayer(playerName);
+            P player = this.adapter.getServerPlayer(playerName);
             if (player == null) {
-                sender.sendMessage(new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" player not found.").color(ChatColor.RED).create());
-                return;
+                this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" player not found.").color(ChatColor.RED).create());
+                return false;
             }
 
-            if (manager.getAuthentificatedUsers().contains(player.getUniqueId().toString())) {
-                sender.sendMessage(new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" 2AF OK.").color(ChatColor.AQUA).create());
+            UUID uuid = this.manager.getPlayerAdapter(player).getUniqueId();
+
+            if (manager.doesUserHavePermWithAuthContext(player)) {
+                this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" TOTP Authentication required.").color(ChatColor.RED).create());
+                try {
+                    if (manager.doesUserHaveTotpSetup(player)) {
+                        this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" TOTP Setup OK.").color(ChatColor.AQUA).create());
+                    } else {
+                        this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" TOTP Setup NOK.").color(ChatColor.RED).create());
+                    }
+                } catch (SQLException e) {
+                    this.adapter.sendMessageToSender(sender, AuthCommand.UNHANDLED_EXCEPTION_BASE_COMPONENTS);
+                    this.logger.severe("Exception on user 2AF setup deleting !");
+                    this.logger.log(Level.SEVERE, e.getMessage(), e);
+                    return false;
+                }
             } else {
-                sender.sendMessage(new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" 2AF NOK.").color(ChatColor.RED).create());
+                this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" TOTP Authentication not required.").color(ChatColor.AQUA).create());
             }
-
+            
+            if (manager.getAuthentificatedUsers().contains(uuid)) {
+                this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" TOTP Authentication OK.").color(ChatColor.AQUA).create());
+            } else {
+                this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" TOTP Authentication NOK.").color(ChatColor.RED).create());
+            }
+            return true;
         }else {
             help(sender);
-        }     
+        } 
         
+        return false;        
     }
 
-    public static void help(CommandSender sender) {
-        sender.sendMessage(new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append("Check the 2AF status of a connected player").color(ChatColor.RED).create());
-        sender.sendMessage(new ComponentBuilder().append(MainLuckSecure.COMMAND_USAGE_BASE_COMPONENTS).append("/lsauth-status {player}").color(ChatColor.GREEN).create());
+    private void help(S sender) {
+        this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append("Check the AUTH status of a connected player").color(ChatColor.RED).create());
+        this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.COMMAND_USAGE_BASE_COMPONENTS).append("/lsauth-status {player}").color(ChatColor.GREEN).create());
     }
     
 }

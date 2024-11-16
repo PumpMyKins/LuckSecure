@@ -1,0 +1,4 @@
+# If enabled: 
+# - disable database
+# - request authentication status through Plugin Messaging Channel
+bungeecord: false

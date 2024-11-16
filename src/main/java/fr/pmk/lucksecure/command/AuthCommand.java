@@ -4,93 +4,130 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.UUID;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import fr.pmk.lucksecure.AuthManager;
-import fr.pmk.lucksecure.MainLuckSecure;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Command;
 
-public class AuthCommand extends Command {
+public final class AuthCommand<S, P extends S, M extends AuthManager<P, ?>, A extends ICommandAdapter<S, P>> {
 
-    private AuthManager manager;
+    // TEXT COMPONENT
+    public static final BaseComponent[] LUCKSECURE_BASE_COMPONENTS = new ComponentBuilder().append("[")
+            .color(ChatColor.WHITE).bold(true).append("Luck").bold(false).color(ChatColor.AQUA).append("Secure")
+            .color(ChatColor.DARK_AQUA).append("]").color(ChatColor.WHITE).bold(true).append(" > ").bold(false)
+            .color(ChatColor.DARK_AQUA).create();
+    public static final BaseComponent[] COMMAND_USAGE_BASE_COMPONENTS = new ComponentBuilder()
+            .append(LUCKSECURE_BASE_COMPONENTS).append("Use : ").color(ChatColor.AQUA).create();
+    public static final BaseComponent[] UNHANDLED_EXCEPTION_BASE_COMPONENTS = new ComponentBuilder()
+            .append(LUCKSECURE_BASE_COMPONENTS).append("Unhandled exception... contact server admin.")
+            .color(ChatColor.RED).create();
 
-    public AuthCommand(AuthManager manager) {
-        super("lsauth", "");
+    private Logger logger;
+    private M manager;
+    private A adapter;
+
+    public AuthCommand(Logger logger, M manager, A adapter) {
+        this.logger = logger;
         this.manager = manager;
+        this.adapter = adapter;
     }
 
-    @Override
-    public void execute(CommandSender sender, String[] args) {
-        if (!(sender instanceof ProxiedPlayer)) {
-            sender.sendMessage(new TextComponent("User command only"));
-            return;
+    public boolean execute(S sender, String[] args) {
+        if (!this.adapter.isSenderInstanceOfPlayer(sender)) {
+            this.adapter.sendMessageToSender(sender, new ComponentBuilder("User command only").create());
+            return false;
         }
 
-        ProxiedPlayer player = (ProxiedPlayer) sender;
+        P player = this.adapter.getPlayerFromSender(sender);
+        UUID uuid = this.manager.getPlayerAdapter(player).getUniqueId();
 
-        if (!manager.doesUserHaveGroupWithAuthContext(player)) {
-            return;
+        if (!manager.doesUserHavePermWithAuthContext(player)) {
+            return false;
         }
 
-        // CHECK IF THE PLAYER IS ALREADY AUTHENTICATED && IF USER HAS GROUP OR PERMISSION WHICH NEED AUTHENTICATED CONTEXT
-        if (!manager.getAuthentificatedUsers().contains(player.getUniqueId().toString())) {
+        // CHECK IF THE PLAYER IS ALREADY AUTHENTICATED && IF USER HAS GROUP OR
+        // PERMISSION WHICH NEED AUTHENTICATED CONTEXT
+        if (!manager.getAuthentificatedUsers().contains(uuid)) {
             try {
-                if (manager.doesUserHasSetup2AF(player)) { // CHECK IF 2AF IS ALREADY SETUP
+                if (manager.doesUserHaveTotpSetup(player)) { // CHECK IF 2AF IS ALREADY SETUP
                     if (args.length == 1 && args[0].matches("[0-9]+")) {
                         String code = args[0];
                         try {
-                            if (manager.isUserToken2AFValid(player, code)) {
-                                player.sendMessage(new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append("Authentication succeed !").color(ChatColor.AQUA).create());
+                            if (manager.isUserTotpValid(player, code)) {
+                                this.adapter.sendMessageToSender(player,
+                                        new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS)
+                                                .append("Authentication succeed !").color(ChatColor.AQUA).create());
+                                return true;
                             } else {
-                                player.sendMessage(new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append("Authentication failed...").color(ChatColor.RED).create());
+                                this.adapter.sendMessageToSender(player,
+                                        new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS)
+                                                .append("Authentication failed...").color(ChatColor.RED).create());
                                 help(player);
                             }
-                        } catch (InvalidKeyException | IllegalArgumentException | NoSuchAlgorithmException | IOException e) {
-                            player.sendMessage(MainLuckSecure.UNHANDLED_EXCEPTION_BASE_COMPONENTS);
-                            MainLuckSecure.LOGGER.severe("Exception on user 2AF code verification !");
-                            MainLuckSecure.LOGGER.log(Level.SEVERE, e.getMessage(), e);
+                        } catch (InvalidKeyException | IllegalArgumentException | NoSuchAlgorithmException
+                                | IOException e) {
+                            this.adapter.sendMessageToSender(player,
+                                    AuthCommand.UNHANDLED_EXCEPTION_BASE_COMPONENTS);
+                            this.logger.severe("Exception on user 2AF code verification !");
+                            this.logger.log(Level.SEVERE, e.getMessage(), e);
                         }
                     } else { // INVALID COMMAND FORMAT
                         help(player);
                     }
                 } else {
-                    String key = manager.generateUserToken2AF(player);
-                    String url = AuthManager.generateUserTokenUrl(player.getDisplayName(), key, player.getDisplayName() + " - LuckSecure@" + ProxyServer.getInstance().getName());
-                    @SuppressWarnings("deprecation")
-                    BaseComponent[] urlTextComponent = new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append("Import the key:").color(ChatColor.AQUA)
-                    .append(key).bold(true)
-                    .append(" or scan the ").color(ChatColor.AQUA)
-                    .append("QRCODE").bold(true).event(new ClickEvent(Action.OPEN_URL, url))
-                    .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder().append("Click to open QRCODE").bold(true).create()))
-                    .append(" with your authenticator app.").color(ChatColor.AQUA).create();
+                    String playerName = this.manager.getPlayerAdapter(player).getName();
 
-                    player.sendMessage(urlTextComponent);
-                    player.sendMessage(new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append("Please authenticate yourself to retreive all your access !").color(ChatColor.RED).create());
+                    String key = manager.generateUserTotpSecret(player);
+                    String url = AuthManager.generateUserTokenUrl(playerName, key,
+                            "LuckSecure@" + this.adapter.getServerName());
+                    @SuppressWarnings("deprecation")
+                    BaseComponent[] urlTextComponent = new ComponentBuilder()
+                            .append(AuthCommand.LUCKSECURE_BASE_COMPONENTS)
+                            .event(new ClickEvent(Action.OPEN_URL, url))
+                            .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                    new ComponentBuilder().append("Click to open QRCODE").bold(true).create()))
+                            .append("Import your key:").color(ChatColor.AQUA)
+                            .append(key).bold(true)
+                            .append(" or scan the ").bold(false).color(ChatColor.AQUA)
+                            .append("QRCODE").bold(true)
+                            .append(" with your authenticator app.").bold(false).color(ChatColor.AQUA).create();
+
+                    this.adapter.sendMessageToSender(player, urlTextComponent);
+                    this.adapter.sendMessageToSender(player,
+                            new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS)
+                                    .append("Please authenticate yourself to retreive all your access !")
+                                    .color(ChatColor.RED).create());
+                    return true;
                 }
             } catch (SQLException e) {
-                player.sendMessage(MainLuckSecure.UNHANDLED_EXCEPTION_BASE_COMPONENTS);
-                MainLuckSecure.LOGGER.severe("Exception on user 2AF setup verification !");
-                MainLuckSecure.LOGGER.log(Level.SEVERE, e.getMessage(), e);
+                this.adapter.sendMessageToSender(player, AuthCommand.UNHANDLED_EXCEPTION_BASE_COMPONENTS);
+                this.logger.severe("Exception on user 2AF setup verification !");
+                this.logger.log(Level.SEVERE, e.getMessage(), e);
             }
         } else {
-            player.sendMessage(new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append("You don't need to authenticate yourself !").color(ChatColor.RED).create());
+            this.adapter.sendMessageToSender(player,
+                    new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS)
+                            .append("You don't need to authenticate yourself !").color(ChatColor.RED).create());
         }
-        
+
+        return false;
     }
 
-    public static void help(ProxiedPlayer player) {
-        player.sendMessage(new ComponentBuilder().append(MainLuckSecure.LUCKSECURE_BASE_COMPONENTS).append("You need to authenticate yourself to retreive all your access !").color(ChatColor.RED).create());
-        player.sendMessage(new ComponentBuilder().append(MainLuckSecure.COMMAND_USAGE_BASE_COMPONENTS).append("/lsauth {code}").color(ChatColor.GREEN).create());
+    private void help(S sender) {
+        this.adapter.sendMessageToSender(sender,
+                new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS)
+                        .append("You need to authenticate yourself to retreive all your access !").color(ChatColor.RED)
+                        .create());
+        this.adapter.sendMessageToSender(sender,
+                new ComponentBuilder().append(AuthCommand.COMMAND_USAGE_BASE_COMPONENTS).append("/lsauth {code}")
+                        .color(ChatColor.GREEN).create());
     }
-    
+
 }

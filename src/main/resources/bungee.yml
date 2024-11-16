@@ -1,5 +1,5 @@
 name: ${project.name}
-main: fr.pmk.lucksecure.bukkit.BukkitLuckSecure
+main: fr.pmk.lucksecure.bungee.BungeeLuckSecure
 version: ${project.version}
 authors: [ Clem_Fern ]
 depend: [ LuckPerms ]

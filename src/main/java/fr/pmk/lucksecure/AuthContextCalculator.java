@@ -6,23 +6,22 @@ import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
 import net.luckperms.api.context.ContextSet;
 import net.luckperms.api.context.ImmutableContextSet;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 
-public class AuthContextCalculator implements ContextCalculator<ProxiedPlayer> {
+public class AuthContextCalculator<T> implements ContextCalculator<T> {
 
     public static final String KEY = "lucksecure";
     public static final String AUTH = "authenticated";
     private static final String NOT_AUTH = "not-authenticated";
 
-    private AuthManager authManager;
+    private AuthManager<T, ?> authManager;
 
-    public AuthContextCalculator(AuthManager authManager) {
+    public AuthContextCalculator(AuthManager<T, ?> authManager) {
         this.authManager = authManager;
     }
 
     @Override
-    public void calculate(@NonNull ProxiedPlayer target, @NonNull ContextConsumer consumer) {
-        if (authManager.getAuthentificatedUsers().contains(target.getUniqueId().toString())) {
+    public void calculate(@NonNull T target, @NonNull ContextConsumer consumer) {
+        if (authManager.getAuthentificatedUsers().contains(this.authManager.getPlayerAdapter(target).getUniqueId())) {
             consumer.accept(KEY, AUTH);
         } else {
             consumer.accept(KEY, NOT_AUTH);
