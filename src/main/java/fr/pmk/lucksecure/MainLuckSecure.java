@@ -55,6 +55,8 @@ public class MainLuckSecure extends Plugin {
 
         luckPerms.getContextManager().registerCalculator(calculator); // REGISTER 2AF Context
 
+        this.getProxy().getPluginManager().registerListener(this, manager);
+
         this.getProxy().getPluginManager().registerCommand(this, new AuthCommand(manager)); // REGISTER AUTH COMMAND
         this.getProxy().getPluginManager().registerCommand(this, new ResetAuthCommand(this, manager)); // REGISTER AUTH COMMAND
         this.getProxy().getPluginManager().registerCommand(this, new StatusAuthCommand(this, manager)); // REGISTER AUTH COMMAND
