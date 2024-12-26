@@ -146,13 +146,13 @@ public class AuthManager implements Listener
         }
 
         public static String generateUserTokenUrl(String issuer, String secret, String label) {
-                String url = OTP.getURL(secret, 6, Type.TOTP, "", label);
+                String url = OTP.getURL(secret, 6, Type.TOTP, issuer, label);
                 try {
                         url = URLEncoder.encode(url, "UTF-8");
                 } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                 }
-                return "https://chart.googleapis.com/chart?chs=400x400&cht=qr&chl=400x400&cht=qr&chl=" + url; 
+                return "https://api.qrserver.com/v1/create-qr-code/?data=" + url;
         }
 
 }
