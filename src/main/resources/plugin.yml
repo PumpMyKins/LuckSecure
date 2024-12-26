@@ -10,3 +10,7 @@ commands:
     description: LuckSecure Reset 2AF Player Command
   lsauth-status:
     description: LuckSecure Display 2AF Player Status Command
+
+libraries:
+  - org.xerial:sqlite-jdbc:3.42.0.0
+  - com.amdelamar:jotp:1.3.0
