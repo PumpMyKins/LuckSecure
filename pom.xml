@@ -11,8 +11,25 @@
 
   <modules>
     <module>common</module>
-    <module>spigot</module>
-    <module>bungee</module>
+    <module>paper</module>
     <module>velocity</module>
   </modules>
+
+  <repositories>
+    <repository>
+      <id>papermc</id>
+      <url>https://repo.papermc.io/repository/maven-public/</url>
+    </repository>
+  </repositories>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>net.luckperms</groupId>
+        <artifactId>api</artifactId>
+        <version>5.4</version>
+        <scope>provided</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 </project>
