@@ -1,63 +1,57 @@
 package fr.pmk.lucksecure.common;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import com.amdelamar.jotp.OTP;
-import com.amdelamar.jotp.type.Type;
+import org.apache.commons.configuration2.YAMLConfiguration;
 
 import fr.pmk.lucksecure.common.database.LuckSecureDatabase;
-import fr.pmk.lucksecure.common.database.UserToken;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.identity.Identity;
-import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPerms;
-import net.luckperms.api.context.Context;
-import net.luckperms.api.model.user.User;
-import net.luckperms.api.node.Node;
-import net.luckperms.api.query.QueryOptions;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.JedisPooled;
 
-public abstract class JedisAuthManager extends AuthManager {
+public class JedisAuthManager extends AuthManager {
 
-        private UnifiedJedis jedis;
+        private static final String RSET_AUTH = "lucksecure:auth_users";
 
-        protected JedisAuthManager(Logger logger, LuckSecureDatabase database, LuckPerms luckPerms) {
+        private JedisPooled jedis;
+
+        protected JedisAuthManager(Logger logger, LuckSecureDatabase database, LuckPerms luckPerms, JedisPooled jedis) {
                 super(logger, database, luckPerms);
+                this.jedis = jedis;
         }
 
+        public final static JedisPooled getJedisFromConfig(YAMLConfiguration config) {
+                return null;
+        }
+
+        @Override
         public boolean isAuthenticated(Audience audience) {
                 Optional<UUID> id = audience.get(Identity.UUID);
                 if (id.isPresent()) {
-                        return this.authentificatedUsers.contains(id.get());
+                        return this.jedis.sismember(RSET_AUTH, id.get().toString());
                 }
                 return false;
         }
 
+        @Override
         public boolean authenticatedUser(Audience audience) {
                 Optional<UUID> id = audience.get(Identity.UUID);
                 if (id.isEmpty()) {
                         throw new IllegalStateException("Audiance UUID can't be empty");
                 }
-                return this.authentificatedUsers.add(id.get());
+                return this.jedis.sadd(RSET_AUTH, id.get().toString()) != 0;
         }
 
+        @Override
         public boolean unauthenticatedUser(Audience audience) {
                 Optional<UUID> id = audience.get(Identity.UUID);
                 if (id.isEmpty()) {
                         throw new IllegalStateException("Audiance UUID can't be empty");
                 }
-                return this.authentificatedUsers.remove(id.get());
+                return this.jedis.srem(RSET_AUTH, id.get().toString()) != 0;
         }
 
         public void closeJedis() {

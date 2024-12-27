@@ -27,7 +27,7 @@ import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import net.luckperms.api.query.QueryOptions;
 
-public abstract class AuthManager {
+public class AuthManager {
         private List<UUID> authentificatedUsers;
 
         protected Logger logger;
@@ -157,12 +157,6 @@ public abstract class AuthManager {
                         this.logger.warning(name + "/" + id.get() + " authentication attempt failed.");
                 }
                 return result;
-        }
-
-        protected abstract AuthContextCalculator<?> getAuthContextCalculator();
-
-        public final void setupLuckPermsContext() {
-                this.luckPerms.getContextManager().registerCalculator(getAuthContextCalculator()); // REGISTER LuckSecure Context
         }
 
         /*
