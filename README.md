@@ -1,5 +1,5 @@
 # LuckSecure
-*This is a velocity and paper plugin. Depends on [LuckPerms](https://github.com/LuckPerms/LuckPerms)*
+*This is a Velocity and Paper plugin. Depends on [LuckPerms](https://github.com/LuckPerms/LuckPerms)*
 
 *LuckSecure V1 for bungeecord [here](https://github.com/PumpMyKins/LuckSecure/tree/v1)*
 

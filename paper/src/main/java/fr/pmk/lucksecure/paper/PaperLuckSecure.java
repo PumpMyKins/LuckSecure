@@ -2,9 +2,14 @@ package fr.pmk.lucksecure.paper;
 
 import java.io.File;
 
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+
 import fr.pmk.lucksecure.common.LuckSecure;
 
-public class PaperLuckSecure extends LuckSecure {
+public class PaperLuckSecure extends LuckSecure implements Listener {
 
     private Main main;
 
@@ -24,15 +29,24 @@ public class PaperLuckSecure extends LuckSecure {
     }
 
     @Override
-    protected void registerCommands() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'registerCommands'");
+    protected void registerListeners() {
+        this.main.getServer().getPluginManager().registerEvents(this, main);
+    }
+
+    @EventHandler
+    public void onPlayerLoginEvent(PlayerLoginEvent event) {
+        this.manager.onPlayerPostLoginEvent(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onPlayerLoginEvent(PlayerQuitEvent event) {
+        this.manager.onPlayerDisconnectEvent(event.getPlayer());
     }
 
     @Override
-    protected void registerListeners() {
+    protected void registerCommands() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'registerListeners'");
-    }  
+        throw new UnsupportedOperationException("Unimplemented method 'registerCommands'");
+    } 
 
 }

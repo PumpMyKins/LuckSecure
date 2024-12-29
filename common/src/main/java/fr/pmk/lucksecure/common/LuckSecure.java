@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.logging.Logger;
 
@@ -74,6 +73,7 @@ public abstract class LuckSecure {
         boolean syncAuthUsers = config.getBoolean("syncAuthUsers", false);
         // if behindProxy or sync auth users enabled -> use redis for session
         if (syncAuthUsers || isServerBehindProxy()) {
+            logger.info("init Redis connection.");
             JedisPooled jedis = JedisAuthManager.getJedisFromConfig(config);
             manager = new JedisAuthManager(getLogger(), database, luckPerms, jedis);
         } else {
@@ -82,8 +82,8 @@ public abstract class LuckSecure {
         }
 
         if (!isServerBehindProxy()) {
-            registerCommands();
             registerListeners();
+            registerCommands();
         }
 
     }

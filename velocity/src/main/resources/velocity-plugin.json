@@ -1,0 +1,16 @@
+{
+    "id": "${project.parent.name}",
+    "name": "${project.parent.name}",
+    "version": "${project.parent.version}",
+    "authors": [
+        "PumpMyKins",
+        "Clem"
+    ],
+    "dependencies": [
+        {
+            "id": "luckperms",
+            "optional": false
+        }
+    ],
+    "main": "fr.pmk.lucksecure.velocity.Main"
+}
