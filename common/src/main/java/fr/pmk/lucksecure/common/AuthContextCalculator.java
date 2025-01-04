@@ -1,14 +1,12 @@
-package fr.pmk.lucksecure;
+package fr.pmk.lucksecure.common;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-
+import net.kyori.adventure.audience.Audience;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
 import net.luckperms.api.context.ContextSet;
 import net.luckperms.api.context.ImmutableContextSet;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 
-public class AuthContextCalculator implements ContextCalculator<ProxiedPlayer> {
+public abstract class AuthContextCalculator<T> implements ContextCalculator<T> {
 
     public static final String KEY = "lucksecure";
     public static final String AUTH = "authenticated";
@@ -21,8 +19,8 @@ public class AuthContextCalculator implements ContextCalculator<ProxiedPlayer> {
     }
 
     @Override
-    public void calculate(@NonNull ProxiedPlayer target, @NonNull ContextConsumer consumer) {
-        if (authManager.getAuthentificatedUsers().contains(target.getUniqueId().toString())) {
+    public void calculate(T target, ContextConsumer consumer) {
+        if (authManager.isAuthenticated(getAudienceFromTarget(target))) {
             consumer.accept(KEY, AUTH);
         } else {
             consumer.accept(KEY, NOT_AUTH);
@@ -36,5 +34,7 @@ public class AuthContextCalculator implements ContextCalculator<ProxiedPlayer> {
         builder.add(KEY, NOT_AUTH);
         return builder.build();
     }
+
+    protected abstract Audience getAudienceFromTarget(T target);
     
 }
