@@ -3,7 +3,7 @@ package fr.pmk.lucksecure.paper.command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import fr.pmk.lucksecure.common.AuthManager;
+import fr.pmk.lucksecure.common.LuckSecure;
 import fr.pmk.lucksecure.common.command.ResetAuthCommand;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -12,8 +12,8 @@ public class PResetAuthCommand implements BasicCommand {
     
     private ResetAuthCommand command;
 
-    public PResetAuthCommand(AuthManager manager) {
-        this.command = new ResetAuthCommand(manager);
+    public PResetAuthCommand(LuckSecure luckSecure) {
+        this.command = new ResetAuthCommand(luckSecure);
     }
 
     @Override

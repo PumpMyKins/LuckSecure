@@ -2,7 +2,6 @@ package fr.pmk.lucksecure.velocity;
 
 import java.io.File;
 
-import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
@@ -12,6 +11,7 @@ import fr.pmk.lucksecure.common.LuckSecure;
 import fr.pmk.lucksecure.velocity.command.VAuthCommand;
 import fr.pmk.lucksecure.velocity.command.VResetAuthCommand;
 import fr.pmk.lucksecure.velocity.command.VStatusAuthCommand;
+import net.kyori.adventure.audience.Audience;
 
 public class VelocityLuckSecure extends LuckSecure {
 
@@ -43,13 +43,18 @@ public class VelocityLuckSecure extends LuckSecure {
         CommandManager commandManager = this.main.getServer().getCommandManager();
 
         CommandMeta commandMetaAuth = commandManager.metaBuilder("lsauth").plugin(this.main).build();
-        commandManager.register(commandMetaAuth, new VAuthCommand(this.manager));
+        commandManager.register(commandMetaAuth, new VAuthCommand(this));
 
         CommandMeta commandMetaReset = commandManager.metaBuilder("lsauth-reset").plugin(this.main).build();
-        commandManager.register(commandMetaReset, new VResetAuthCommand(this.manager));
+        commandManager.register(commandMetaReset, new VResetAuthCommand(this));
 
         CommandMeta commandMetaStatus = commandManager.metaBuilder("lsauth-status").plugin(this.main).build();
-        commandManager.register(commandMetaStatus, new VStatusAuthCommand(this.manager));
+        commandManager.register(commandMetaStatus, new VStatusAuthCommand(this));
+    }
+
+    @Override
+    public Audience getPlayer(String name) {
+        return this.main.getServer().getPlayer(name).orElse(null);
     }
 
 }

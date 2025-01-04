@@ -2,61 +2,57 @@ package fr.pmk.lucksecure.common.command;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import fr.pmk.lucksecure.common.AuthManager;
+import fr.pmk.lucksecure.common.LuckSecure;
+import fr.pmk.lucksecure.common.Util;
 import net.kyori.adventure.audience.Audience;
 
 public final class ResetAuthCommand {
 
+    private LuckSecure luckSecure;
     private AuthManager manager;
 
-    public ResetAuthCommand(AuthManager manager) {
-        this.manager = manager;
+    public ResetAuthCommand(LuckSecure luckSecure) {
+        this.luckSecure = luckSecure;
+        this.manager = this.luckSecure.getAuthManager();
     }
 
-    public boolean execute(Audience sender, String[] args) {
+    public void execute(Audience sender, String[] args) {
         if (args.length == 1) {
             String playerName = args[0];
-            P player = this.adapter.getServerPlayer(playerName);
-            if (player == null) {
-                this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" player not found.").color(ChatColor.RED).create());
-                return false;
+
+            if (playerName.trim().isEmpty()) {
+                help(sender);
+                return;
+            }
+
+            Audience target = this.luckSecure.getPlayer(playerName);
+
+            if (target == null) {
+                sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<white>" + playerName + "</white> <red>player not found.</red>"));
+                return;
             }
 
             try {
-                if (manager.deleteUserTotpSecret(player)) {
-                    this.adapter.sendMessageToSender(sender,
-                            new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS)
-                                    .append("2AF setup reset succeed for ").color(ChatColor.AQUA).append(playerName)
-                                    .color(ChatColor.WHITE).append(".").color(ChatColor.AQUA).create());
-                    return true;
+                if (manager.deleteUserTotpSecret(target)) {
+                    sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<aqua>TOTP successfully reset for</aqua> <white>" + playerName + "</white><aqua>.</aqua>"));
                 } else {
-                    this.adapter.sendMessageToSender(sender,
-                            new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS)
-                                    .append("No 2AF setup found for this player.").color(ChatColor.RED).create());
-
+                    sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<red>No TOTP found for this player.</red>"));
                 }
             } catch (SQLException e) {
-                this.adapter.sendMessageToSender(sender, AuthCommand.UNHANDLED_EXCEPTION_BASE_COMPONENTS);
-                this.logger.severe("Exception on user 2AF setup deleting !");
-                this.logger.log(Level.SEVERE, e.getMessage(), e);
+                sender.sendMessage(Util.mm(LuckSecure.UNHANDLED_EXCEPTION_MSG));
+                this.manager.getLogger().severe("Exception on user 2AF setup deleting !");
+                this.manager.getLogger().log(Level.SEVERE, e.getMessage(), e);
             }
-
         } else {
             help(sender);
         }
-
-        return false;
     }
 
     private void help(Audience sender) {
-        this.adapter.sendMessageToSender(sender,
-                new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS)
-                        .append("Reset the 2AF setup of a player").color(ChatColor.RED).create());
-        this.adapter.sendMessageToSender(sender,
-                new ComponentBuilder().append(AuthCommand.COMMAND_USAGE_BASE_COMPONENTS)
-                        .append("/lsauth-reset {player}").color(ChatColor.GREEN).create());
+        sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<red>Reset the TOTP of a player.</red>"));
+        sender.sendMessage(Util.mm(LuckSecure.COMMAND_USAGE_BASE_MSG + "<green>/lsauth-reset {player}</green>"));
     }
 
 }

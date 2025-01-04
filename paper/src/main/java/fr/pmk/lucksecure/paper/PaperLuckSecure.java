@@ -15,6 +15,7 @@ import fr.pmk.lucksecure.paper.command.PStatusAuthCommand;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import net.kyori.adventure.audience.Audience;
 
 public class PaperLuckSecure extends LuckSecure implements Listener {
 
@@ -55,10 +56,15 @@ public class PaperLuckSecure extends LuckSecure implements Listener {
         LifecycleEventManager<Plugin> manager = this.main.getLifecycleManager();
         manager.registerEventHandler(LifecycleEvents.COMMANDS, event -> {
             final Commands commands = event.registrar();
-            commands.register("lsauth", "LuckSecure Authentication Command", new PAuthCommand(this.manager));
-            commands.register("lsauth-reset", "LuckSecure Reset Player TOTP Secret Command", new PResetAuthCommand(this.manager));
-            commands.register("lsauth-status", "LuckSecure Display Player TOTP Status Command", new PStatusAuthCommand(this.manager));
+            commands.register("lsauth", "LuckSecure Authentication Command", new PAuthCommand(this));
+            commands.register("lsauth-reset", "LuckSecure Reset Player TOTP Secret Command", new PResetAuthCommand(this));
+            commands.register("lsauth-status", "LuckSecure Display Player TOTP Status Command", new PStatusAuthCommand(this));
         });
+    }
+
+    @Override
+    public Audience getPlayer(String name) {
+        return this.main.getServer().getPlayer(name);
     } 
 
 }

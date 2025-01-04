@@ -28,6 +28,10 @@
       <artifactId>adventure-api</artifactId>
     </dependency>
     <dependency>
+      <groupId>net.kyori</groupId>
+      <artifactId>adventure-text-minimessage</artifactId>
+    </dependency>
+    <dependency>
       <groupId>net.luckperms</groupId>
       <artifactId>api</artifactId>
     </dependency>

@@ -1,72 +1,69 @@
 package fr.pmk.lucksecure.common.command;
 
 import java.sql.SQLException;
-import java.util.UUID;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import fr.pmk.lucksecure.common.AuthManager;
+import fr.pmk.lucksecure.common.LuckSecure;
+import fr.pmk.lucksecure.common.Util;
 import net.kyori.adventure.audience.Audience;
 
 public class StatusAuthCommand {
     
+    private LuckSecure luckSecure;
     private AuthManager manager;
 
-    public StatusAuthCommand(AuthManager manager) {
-        this.manager = manager;
+    public StatusAuthCommand(LuckSecure luckSecure) {
+        this.luckSecure = luckSecure;
+        this.manager = this.luckSecure.getAuthManager();
     }
 
-    public boolean execute(Audience sender, String[] args) {
+    public void execute(Audience sender, String[] args) {
         if (args.length == 1) {
             String playerName = args[0];
 
             if (playerName.trim().isEmpty()) {
                 help(sender);
-                return false;
+                return;
             }
 
-            P player = this.adapter.getServerPlayer(playerName);
-            if (player == null) {
-                this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" player not found.").color(ChatColor.RED).create());
-                return false;
+            Audience target = this.luckSecure.getPlayer(playerName);
+
+            if (target == null) {
+                sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<white>" + playerName + "</white> <red>player not found.</red>"));
+                return;
             }
 
-            UUID uuid = this.manager.getPlayerAdapter(player).getUniqueId();
-
-            if (manager.doesUserHavePermWithAuthContext(player)) {
-                this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" TOTP Authentication required.").color(ChatColor.RED).create());
+            if (manager.doesUserHavePermWithAuthContext(target)) {
+                sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<white>" + playerName + "</white> <red>TOTP Authentication required.</red>"));
                 try {
-                    if (manager.doesUserHaveTotpSetup(player)) {
-                        this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" TOTP Setup OK.").color(ChatColor.AQUA).create());
+                    if (manager.doesUserHaveTotpSetup(target)) {
+                        sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<white>" + playerName + "</white> <aqua>TOTP Setup OK.</aqua>"));
                     } else {
-                        this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" TOTP Setup NOK.").color(ChatColor.RED).create());
+                        sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<white>" + playerName + "</white> <red>TOTP Setup NOK.</red>"));
                     }
                 } catch (SQLException e) {
-                    this.adapter.sendMessageToSender(sender, AuthCommand.UNHANDLED_EXCEPTION_BASE_COMPONENTS);
-                    this.logger.severe("Exception on user 2AF setup deleting !");
-                    this.logger.log(Level.SEVERE, e.getMessage(), e);
-                    return false;
+                    sender.sendMessage(Util.mm(LuckSecure.UNHANDLED_EXCEPTION_MSG));
+                    this.manager.getLogger().severe("Exception on user TOTP verification !");
+                    this.manager.getLogger().log(Level.SEVERE, e.getMessage(), e);
                 }
             } else {
-                this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" TOTP Authentication not required.").color(ChatColor.AQUA).create());
+                sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<white>" + playerName + "</white> <aqua>TOTP Authentication not required.</aqua>"));
             }
             
-            if (manager.getAuthentificatedUsers().contains(uuid)) {
-                this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" TOTP Authentication OK.").color(ChatColor.AQUA).create());
+            if (manager.isAuthenticated(target)) {
+                sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<white>" + playerName + "</white> <aqua>TOTP Authentication OK.</aqua>"));
             } else {
-                this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append(playerName).color(ChatColor.WHITE).append(" TOTP Authentication NOK.").color(ChatColor.RED).create());
+                sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<white>" + playerName + "</white> <red>TOTP Authentication NOK.</red>"));
             }
-            return true;
         }else {
             help(sender);
-        } 
-        
-        return false;        
+        }     
     }
 
     private void help(Audience sender) {
-        this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append("Check the AUTH status of a connected player").color(ChatColor.RED).create());
-        this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.COMMAND_USAGE_BASE_COMPONENTS).append("/lsauth-status {player}").color(ChatColor.GREEN).create());
+        sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<red>Check the AUTH status of a player.</red>"));
+        sender.sendMessage(Util.mm(LuckSecure.COMMAND_USAGE_BASE_MSG + "<green>/lsauth-status {player}</green>"));
     }
     
 }

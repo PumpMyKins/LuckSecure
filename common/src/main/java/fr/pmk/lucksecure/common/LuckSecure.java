@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import org.apache.commons.configuration2.YAMLConfiguration;
 
 import fr.pmk.lucksecure.common.database.LuckSecureDatabase;
+import net.kyori.adventure.audience.Audience;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import redis.clients.jedis.JedisPooled;
@@ -18,6 +19,10 @@ import redis.clients.jedis.JedisPooled;
 public abstract class LuckSecure {
 
     public static final String LUCKSECURE_CONFIG = "config.yml";
+
+    public static final String LUCKSECURE_BASE_MSG = "<b>[</b><aqua>Luck</aqua><dark_aqua>Secure</dark_aqua><b>]</b> > ";
+    public static final String COMMAND_USAGE_BASE_MSG = "<aqua>Use : </aqua>";
+    public static final String UNHANDLED_EXCEPTION_MSG = LUCKSECURE_BASE_MSG + "<red>Unhandled exception... contact server admin.</red>";
 
     private Logger logger;
     protected LuckPerms luckPerms;
@@ -30,6 +35,10 @@ public abstract class LuckSecure {
 
     protected final Logger getLogger() {
         return this.logger;
+    }
+
+    public final AuthManager getAuthManager() {
+        return manager;
     }
 
     protected abstract File getPluginDataPath();
@@ -98,4 +107,6 @@ public abstract class LuckSecure {
 
     protected abstract void registerCommands();
     protected abstract void registerListeners();
+
+    public abstract Audience getPlayer(String name);
 }

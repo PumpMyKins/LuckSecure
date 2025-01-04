@@ -3,7 +3,7 @@ package fr.pmk.lucksecure.paper.command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import fr.pmk.lucksecure.common.AuthManager;
+import fr.pmk.lucksecure.common.LuckSecure;
 import fr.pmk.lucksecure.common.command.AuthCommand;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -12,8 +12,8 @@ public class PAuthCommand implements BasicCommand {
     
     private AuthCommand command;
 
-    public PAuthCommand(AuthManager manager) {
-        this.command = new AuthCommand(manager);
+    public PAuthCommand(LuckSecure luckSecure) {
+        this.command = new AuthCommand(luckSecure);
     }
 
     @Override
