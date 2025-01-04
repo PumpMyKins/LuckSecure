@@ -1,4 +1,4 @@
-package fr.pmk.lucksecure.command;
+package fr.pmk.lucksecure.common.command;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -8,15 +8,10 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import fr.pmk.lucksecure.AuthManager;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
+import fr.pmk.lucksecure.common.AuthManager;
+import net.kyori.adventure.audience.Audience;
 
-public final class AuthCommand<S, P extends S, M extends AuthManager<P, ?>, A extends ICommandAdapter<S, P>> {
+public final class AuthCommand {
 
     // TEXT COMPONENT
     public static final BaseComponent[] LUCKSECURE_BASE_COMPONENTS = new ComponentBuilder().append("[")
@@ -29,17 +24,13 @@ public final class AuthCommand<S, P extends S, M extends AuthManager<P, ?>, A ex
             .append(LUCKSECURE_BASE_COMPONENTS).append("Unhandled exception... contact server admin.")
             .color(ChatColor.RED).create();
 
-    private Logger logger;
-    private M manager;
-    private A adapter;
+    private AuthManager manager;
 
-    public AuthCommand(Logger logger, M manager, A adapter) {
-        this.logger = logger;
+    public AuthCommand(AuthManager manager) {
         this.manager = manager;
-        this.adapter = adapter;
     }
 
-    public boolean execute(S sender, String[] args) {
+    public boolean execute(Audience sender, String[] args) {
         if (!this.adapter.isSenderInstanceOfPlayer(sender)) {
             this.adapter.sendMessageToSender(sender, new ComponentBuilder("User command only").create());
             return false;
@@ -120,7 +111,7 @@ public final class AuthCommand<S, P extends S, M extends AuthManager<P, ?>, A ex
         return false;
     }
 
-    private void help(S sender) {
+    private void help(Audience sender) {
         this.adapter.sendMessageToSender(sender,
                 new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS)
                         .append("You need to authenticate yourself to retreive all your access !").color(ChatColor.RED)

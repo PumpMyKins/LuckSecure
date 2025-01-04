@@ -1,27 +1,22 @@
-package fr.pmk.lucksecure.command;
+package fr.pmk.lucksecure.common.command;
 
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import fr.pmk.lucksecure.AuthManager;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.ComponentBuilder;
+import fr.pmk.lucksecure.common.AuthManager;
+import net.kyori.adventure.audience.Audience;
 
-public class StatusAuthCommand<S, P extends S, M extends AuthManager<P, ?>, A extends ICommandAdapter<S, P>> {
+public class StatusAuthCommand {
     
-    private Logger logger;
-    private M manager;
-    private A adapter;
+    private AuthManager manager;
 
-    public StatusAuthCommand(Logger logger, M manager, A adapter) {
-        this.logger = logger;
+    public StatusAuthCommand(AuthManager manager) {
         this.manager = manager;
-        this.adapter = adapter;
     }
 
-    public boolean execute(S sender, String[] args) {
+    public boolean execute(Audience sender, String[] args) {
         if (args.length == 1) {
             String playerName = args[0];
 
@@ -69,7 +64,7 @@ public class StatusAuthCommand<S, P extends S, M extends AuthManager<P, ?>, A ex
         return false;        
     }
 
-    private void help(S sender) {
+    private void help(Audience sender) {
         this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS).append("Check the AUTH status of a connected player").color(ChatColor.RED).create());
         this.adapter.sendMessageToSender(sender, new ComponentBuilder().append(AuthCommand.COMMAND_USAGE_BASE_COMPONENTS).append("/lsauth-status {player}").color(ChatColor.GREEN).create());
     }

@@ -1,31 +1,21 @@
-package fr.pmk.lucksecure.command;
+package fr.pmk.lucksecure.common.command;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import fr.pmk.lucksecure.AuthManager;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.ComponentBuilder;
+import fr.pmk.lucksecure.common.AuthManager;
+import net.kyori.adventure.audience.Audience;
 
-public final class ResetAuthCommand<S, P extends S, M extends AuthManager<P, ?>, A extends ICommandAdapter<S, P>> {
+public final class ResetAuthCommand {
 
-    private Logger logger;
-    private M manager;
-    private A adapter;
+    private AuthManager manager;
 
-    public ResetAuthCommand(Logger logger, M manager, A adapter) {
-        this.logger = logger;
+    public ResetAuthCommand(AuthManager manager) {
         this.manager = manager;
-        this.adapter = adapter;
     }
 
-    public boolean execute(S sender, String[] args) {
-        if (this.adapter.isSenderInstanceOfPlayer(sender)) {
-            this.adapter.sendMessageToSender(sender, new ComponentBuilder("Console command only").create());
-            return false;
-        }
-
+    public boolean execute(Audience sender, String[] args) {
         if (args.length == 1) {
             String playerName = args[0];
             P player = this.adapter.getServerPlayer(playerName);
@@ -60,7 +50,7 @@ public final class ResetAuthCommand<S, P extends S, M extends AuthManager<P, ?>,
         return false;
     }
 
-    private void help(S sender) {
+    private void help(Audience sender) {
         this.adapter.sendMessageToSender(sender,
                 new ComponentBuilder().append(AuthCommand.LUCKSECURE_BASE_COMPONENTS)
                         .append("Reset the 2AF setup of a player").color(ChatColor.RED).create());

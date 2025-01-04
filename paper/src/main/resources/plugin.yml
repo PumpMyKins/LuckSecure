@@ -10,3 +10,10 @@ libraries:
   - com.j256.ormlite:ormlite-jdbc:6.1
   - com.h2database:h2:2.3.232
   - redis.clients:jedis:5.2.0
+commands:
+  lsauth:
+    description: LuckSecure Authentication Command
+  lsauth-reset:
+    description: LuckSecure Reset Player TOTP Secret Command
+  lsauth-status:
+    description: LuckSecure Display Player TOTP Status Command

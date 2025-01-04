@@ -2,10 +2,16 @@ package fr.pmk.lucksecure.velocity;
 
 import java.io.File;
 
+import com.velocitypowered.api.command.BrigadierCommand;
+import com.velocitypowered.api.command.CommandManager;
+import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.LoginEvent;
 
 import fr.pmk.lucksecure.common.LuckSecure;
+import fr.pmk.lucksecure.velocity.command.VAuthCommand;
+import fr.pmk.lucksecure.velocity.command.VResetAuthCommand;
+import fr.pmk.lucksecure.velocity.command.VStatusAuthCommand;
 
 public class VelocityLuckSecure extends LuckSecure {
 
@@ -34,8 +40,16 @@ public class VelocityLuckSecure extends LuckSecure {
 
     @Override
     protected void registerCommands() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'registerCommands'");
+        CommandManager commandManager = this.main.getServer().getCommandManager();
+
+        CommandMeta commandMetaAuth = commandManager.metaBuilder("lsauth").plugin(this.main).build();
+        commandManager.register(commandMetaAuth, new VAuthCommand(this.manager));
+
+        CommandMeta commandMetaReset = commandManager.metaBuilder("lsauth-reset").plugin(this.main).build();
+        commandManager.register(commandMetaReset, new VResetAuthCommand(this.manager));
+
+        CommandMeta commandMetaStatus = commandManager.metaBuilder("lsauth-status").plugin(this.main).build();
+        commandManager.register(commandMetaStatus, new VStatusAuthCommand(this.manager));
     }
 
 }

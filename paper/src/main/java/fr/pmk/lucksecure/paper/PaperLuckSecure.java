@@ -6,8 +6,15 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.plugin.Plugin;
 
 import fr.pmk.lucksecure.common.LuckSecure;
+import fr.pmk.lucksecure.paper.command.PAuthCommand;
+import fr.pmk.lucksecure.paper.command.PResetAuthCommand;
+import fr.pmk.lucksecure.paper.command.PStatusAuthCommand;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 
 public class PaperLuckSecure extends LuckSecure implements Listener {
 
@@ -45,8 +52,13 @@ public class PaperLuckSecure extends LuckSecure implements Listener {
 
     @Override
     protected void registerCommands() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'registerCommands'");
+        LifecycleEventManager<Plugin> manager = this.main.getLifecycleManager();
+        manager.registerEventHandler(LifecycleEvents.COMMANDS, event -> {
+            final Commands commands = event.registrar();
+            commands.register("lsauth", "LuckSecure Authentication Command", new PAuthCommand(this.manager));
+            commands.register("lsauth-reset", "LuckSecure Reset Player TOTP Secret Command", new PResetAuthCommand(this.manager));
+            commands.register("lsauth-status", "LuckSecure Display Player TOTP Status Command", new PStatusAuthCommand(this.manager));
+        });
     } 
 
 }

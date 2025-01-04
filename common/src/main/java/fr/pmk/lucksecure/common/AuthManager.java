@@ -166,6 +166,10 @@ public class AuthManager {
                 return this.luckPerms;
         }
 
+        public final Logger getLogger() {
+            return logger;
+        }
+
         public static String generateUserTokenUrl(String issuer, String secret, String label) {
                 String url = OTP.getURL(secret, 6, Type.TOTP, issuer, label);
                 try {
