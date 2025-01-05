@@ -28,8 +28,8 @@
 
 Command name | Permission | Description
 --- | --- | ---
-lsauth | none | On the first use, it will generate a totp key and qrcode
-lsauth {code} | none | Use to authenticate yourself with your TOTP code whe you joined the server, set the lucksecure context to `authenticated`
+lsauth | lsauth.cmd | On the first use, it will generate a totp key and qrcode
+lsauth {code} | lsauth.cmd | Use to authenticate yourself with your TOTP code whe you joined the server, set the lucksecure context to `authenticated`
 lsauth-status {player} | lsauth.cmd | Display the authentication status
 lsauth-reset {player} | none | Reset the totp key of a player (Usable in the bungeecord console only)
 

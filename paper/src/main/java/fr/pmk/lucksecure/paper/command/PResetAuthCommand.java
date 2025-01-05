@@ -26,4 +26,9 @@ public class PResetAuthCommand implements BasicCommand {
         command.execute(sender, args);
     }
 
+    @Override
+    public boolean canUse(CommandSender sender) {
+        return !(sender instanceof Player);
+    }
+
 }

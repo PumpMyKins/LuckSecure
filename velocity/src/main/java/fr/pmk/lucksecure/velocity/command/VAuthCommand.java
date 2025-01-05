@@ -25,4 +25,9 @@ public class VAuthCommand implements SimpleCommand {
         command.execute(source, invocation.arguments());
     }
 
+    @Override
+    public boolean hasPermission(Invocation invocation) {
+        return invocation.source().hasPermission(command.permission());
+    }
+
 }

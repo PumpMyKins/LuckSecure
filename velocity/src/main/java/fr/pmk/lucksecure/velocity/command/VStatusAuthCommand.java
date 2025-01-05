@@ -18,4 +18,9 @@ public class VStatusAuthCommand implements SimpleCommand {
         command.execute(invocation.source(), invocation.arguments());
     }
 
+    @Override
+    public boolean hasPermission(Invocation invocation) {
+        return invocation.source().hasPermission(command.permission());
+    }
+
 }

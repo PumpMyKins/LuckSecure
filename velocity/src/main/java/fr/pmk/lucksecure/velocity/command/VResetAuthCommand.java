@@ -25,4 +25,9 @@ public class VResetAuthCommand implements SimpleCommand {
         command.execute(source, invocation.arguments());
     }
 
+    @Override
+    public boolean hasPermission(Invocation invocation) {
+        return false;
+    }
+
 }

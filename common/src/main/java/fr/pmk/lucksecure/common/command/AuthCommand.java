@@ -20,6 +20,10 @@ public final class AuthCommand {
         this.manager = luckSecure.getAuthManager();
     }
 
+    public String permission() {
+        return "lsauth.cmd";
+    }
+
     public void execute(Audience sender, String[] args) {
         if (!manager.doesUserHavePermWithAuthContext(sender)) {
             return;

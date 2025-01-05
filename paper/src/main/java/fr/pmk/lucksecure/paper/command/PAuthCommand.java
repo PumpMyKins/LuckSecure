@@ -26,4 +26,9 @@ public class PAuthCommand implements BasicCommand {
         command.execute(sender, args);
     }
 
+    @Override
+    public String permission() {
+        return command.permission();
+    }
+
 }

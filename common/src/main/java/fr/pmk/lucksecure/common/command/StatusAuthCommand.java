@@ -18,6 +18,10 @@ public class StatusAuthCommand {
         this.manager = this.luckSecure.getAuthManager();
     }
 
+    public String permission() {
+        return "lsauth.cmd";
+    }
+
     public void execute(Audience sender, String[] args) {
         if (args.length == 1) {
             String playerName = args[0];

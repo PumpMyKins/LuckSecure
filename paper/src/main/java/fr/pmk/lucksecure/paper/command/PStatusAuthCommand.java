@@ -18,4 +18,9 @@ public class PStatusAuthCommand implements BasicCommand {
         command.execute(stack.getSender(), args);
     }
 
+    @Override
+    public String permission() {
+        return command.permission();
+    }
+
 }
