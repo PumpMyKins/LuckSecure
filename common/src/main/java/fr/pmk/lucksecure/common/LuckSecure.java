@@ -41,6 +41,10 @@ public abstract class LuckSecure {
         return manager;
     }
 
+    public final YAMLConfiguration getConfig() {
+        return config;
+    }
+
     protected abstract File getPluginDataPath();
     private void saveDefaultConfigs() throws IOException {
         File dataPath = getPluginDataPath();

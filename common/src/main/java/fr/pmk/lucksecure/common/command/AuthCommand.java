@@ -14,10 +14,12 @@ import net.kyori.adventure.identity.Identity;
 
 public final class AuthCommand {
 
+    private LuckSecure luckSecure;
     private AuthManager manager;
 
     public AuthCommand(LuckSecure luckSecure) {
-        this.manager = luckSecure.getAuthManager();
+        this.luckSecure = luckSecure;
+        this.manager = this.luckSecure.getAuthManager();
     }
 
     public String permission() {
@@ -55,7 +57,8 @@ public final class AuthCommand {
                     String playerName = sender.get(Identity.NAME).get();
 
                     String key = manager.generateUserTotpSecret(sender);
-                    String url = AuthManager.generateUserTokenUrl(playerName, key, "LuckSecure");
+                    String label = "LuckSecure" + (this.luckSecure.getConfig().getString("qrcode-label") != null ? "@" + this.luckSecure.getConfig().getString("qrcode-label") != null : "");
+                    String url = AuthManager.generateUserTokenUrl(playerName, key, label);
 
                     sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<aqua>Import this <b><hover:show_text:'KEY:" + key + "'>KEY</hover></b> into your MFA App.</aqua>"));
                     sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<aqua>Or scan this <b><hover:show_text:'Click to open.'><click:open_url:'" + url + "'>QRCODE</click></hover></b>.</aqua>"));
