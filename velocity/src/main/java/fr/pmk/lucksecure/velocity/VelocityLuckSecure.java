@@ -7,6 +7,7 @@ import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.LoginEvent;
 
+import fr.pmk.lucksecure.common.AuthContextCalculator;
 import fr.pmk.lucksecure.common.LuckSecure;
 import fr.pmk.lucksecure.velocity.command.VAuthCommand;
 import fr.pmk.lucksecure.velocity.command.VResetAuthCommand;
@@ -55,6 +56,11 @@ public class VelocityLuckSecure extends LuckSecure {
     @Override
     public Audience getPlayer(String name) {
         return this.main.getServer().getPlayer(name).orElse(null);
+    }
+
+    @Override
+    protected AuthContextCalculator<?> getLuckPermsContextCalculator() {
+        return new VAuthContextCalculator(this.manager);
     }
 
 }

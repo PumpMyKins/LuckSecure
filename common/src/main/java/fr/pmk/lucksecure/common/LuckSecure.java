@@ -90,6 +90,10 @@ public abstract class LuckSecure {
             manager = new AuthManager(getLogger(), database, luckPerms);
         }
 
+        logger.info("Registering LuckPerms context calculator.");
+        AuthContextCalculator<?> contextCalculator = getLuckPermsContextCalculator();
+        luckPerms.getContextManager().registerCalculator(contextCalculator);
+
         if (!isServerBehindProxy()) {
             registerListeners();
             registerCommands();
@@ -105,6 +109,7 @@ public abstract class LuckSecure {
 
     protected abstract boolean isServerBehindProxy();
 
+    protected abstract AuthContextCalculator<?> getLuckPermsContextCalculator();
     protected abstract void registerCommands();
     protected abstract void registerListeners();
 
