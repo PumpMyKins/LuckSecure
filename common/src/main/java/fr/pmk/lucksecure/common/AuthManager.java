@@ -46,7 +46,7 @@ public class AuthManager {
         public final void onPlayerPostLoginEvent(Audience audience) {
                 Optional<UUID> id = audience.get(Identity.UUID);
                 if (id.isPresent() && this.unauthenticatedUser(audience)) {
-                        Component name = audience.getOrDefault(Identity.DISPLAY_NAME, Component.text("null"));
+                        String name = audience.getOrDefault(Identity.NAME, null);
                         this.logger.fine(name + "/" + id.get() + " cleaned up from authenticated players. (disconnect event missed ?)");
                 }
         }
@@ -55,7 +55,7 @@ public class AuthManager {
         public final void onPlayerDisconnectEvent(Audience audience) {
                 Optional<UUID> id = audience.get(Identity.UUID);
                 if (id.isPresent() && this.unauthenticatedUser(audience)) { // AUTHENTICATED USERS LIST CLEAR
-                        Component name = audience.getOrDefault(Identity.DISPLAY_NAME, Component.text("null"));
+                        String name = audience.getOrDefault(Identity.NAME, null);
                         this.logger.fine(name + "/" + id.get() + " has been removed from the authenticated players.");
                 }
         }
@@ -145,7 +145,7 @@ public class AuthManager {
                         throw new IllegalStateException("Audiance UUID can't be empty");
                 }
 
-                String name = audience.getOrDefault(Identity.DISPLAY_NAME, Component.text("null")).toString();
+                String name = audience.getOrDefault(Identity.NAME, null);
                 String secret = this.getUserTotpSecret(audience);
 
                 boolean result = false;
