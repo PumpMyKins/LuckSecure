@@ -21,7 +21,7 @@ public abstract class LuckSecure {
     public static final String LUCKSECURE_CONFIG = "config.yml";
 
     public static final String LUCKSECURE_BASE_MSG = "<b>[</b><aqua>Luck</aqua><dark_aqua>Secure</dark_aqua><b>]</b> > ";
-    public static final String COMMAND_USAGE_BASE_MSG = "<aqua>Use : </aqua>";
+    public static final String COMMAND_USAGE_BASE_MSG = LUCKSECURE_BASE_MSG + "<aqua>Use : </aqua>";
     public static final String UNHANDLED_EXCEPTION_MSG = LUCKSECURE_BASE_MSG + "<red>Unhandled exception... contact server admin.</red>";
 
     private Logger logger;
