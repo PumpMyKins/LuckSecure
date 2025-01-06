@@ -1,4 +1,4 @@
-qrcode-label: "My Secured Server"
+# qrcode-label: "My Secured Server"
 syncAuthUsers: false
 redis:
   host: "localhost"

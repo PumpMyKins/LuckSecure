@@ -1,0 +1,9 @@
+services:
+  paper:
+    build:
+      context: context
+      dockerfile: ../Dockerfile
+    volumes:
+      - "../../paper/target/lucksecure-paper.jar:/plugins/lucksecure-paper.jar:ro"
+    ports:
+      - 25565:25565
