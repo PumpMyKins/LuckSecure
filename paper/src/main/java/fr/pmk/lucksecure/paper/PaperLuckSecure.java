@@ -45,12 +45,12 @@ public class PaperLuckSecure extends LuckSecure implements Listener {
 
     @EventHandler
     public void onPlayerLoginEvent(PlayerLoginEvent event) {
-        this.manager.onPlayerPostLoginEvent(event.getPlayer());
+        this.manager.onPlayerPostLoginEvent(event.getPlayer(), event.getAddress());
     }
 
     @EventHandler
     public void onPlayerLoginEvent(PlayerQuitEvent event) {
-        this.manager.onPlayerDisconnectEvent(event.getPlayer());
+        this.manager.onPlayerDisconnectEvent(event.getPlayer(), event.getPlayer().getAddress().getAddress());
     }
 
     @Override

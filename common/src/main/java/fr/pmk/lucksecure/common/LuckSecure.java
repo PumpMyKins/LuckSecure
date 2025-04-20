@@ -69,6 +69,7 @@ public abstract class LuckSecure {
         try {
             saveDefaultConfigs();
             config = new YAMLConfiguration();
+            config.setThrowExceptionOnMissing(true);
             config.read(new FileInputStream(new File(getPluginDataPath(), LUCKSECURE_CONFIG)));
         } catch (IllegalStateException e) {
             throw new Exception("Unable to initialize LuckSecure config.", e);
@@ -83,15 +84,17 @@ public abstract class LuckSecure {
             database = new LuckSecureDatabase(getLogger(), "jdbc:h2:./" + db.toPath());
         }
 
-        boolean syncAuthUsers = config.getBoolean("syncAuthUsers", false);
+        AuthManager.Config authConfig = new AuthManager.Config(config);
+
+        boolean syncAuth = config.getBoolean("sync_authentication", false);
         // if behindProxy or sync auth users enabled -> use redis for session
-        if (syncAuthUsers || isServerBehindProxy()) {
+        if (syncAuth || isServerBehindProxy()) {
             logger.info("init Redis connection.");
             JedisPooled jedis = JedisAuthManager.getJedisFromConfig(config);
-            manager = new JedisAuthManager(getLogger(), database, luckPerms, jedis);
+            manager = new JedisAuthManager(getLogger(), database, luckPerms, jedis, authConfig);
         } else {
             // AuthManager: no Redis, Local H2 Storage
-            manager = new AuthManager(getLogger(), database, luckPerms);
+            manager = new AuthManager(getLogger(), database, luckPerms, authConfig);
         }
 
         logger.info("Registering LuckPerms context calculator.");
