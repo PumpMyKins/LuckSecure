@@ -19,7 +19,7 @@ public class LuckSecureDatabase {
         this.logger = logger;
 
         this.connection = new JdbcPooledConnectionSource(url);
-        this.logger.fine("Opened database successfully");
+        this.logger.info("Opened database successfully");
 
         this.totpDao = DaoManager.createDao(this.connection, UserToken.class);
 
@@ -28,7 +28,7 @@ public class LuckSecureDatabase {
 
     public void close() throws Exception {
         this.connection.close();
-        this.logger.fine("Closed database successfully");
+        this.logger.info("Closed database successfully");
     }
 
     private void setup() throws SQLException {

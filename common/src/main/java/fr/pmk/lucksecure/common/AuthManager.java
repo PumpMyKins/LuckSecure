@@ -66,7 +66,7 @@ public class AuthManager {
                 || (System.currentTimeMillis() - previous.getDisconnectionTime()) > (this.config.authDisconnectionGraceTime * 60000)) {
                         if (this.unauthenticateUser(audience)) {
                                 String name = audience.getOrDefault(Identity.NAME, null);
-                                this.logger.fine(name + "/" + id.get() + " cleaned up from authenticated players. (disconnect event missed ?)");
+                                this.logger.info(name + "/" + id.get() + " cleaned up from authenticated players.");
                         }
                 }
 
@@ -82,7 +82,7 @@ public class AuthManager {
                 if (this.config.authDisconnectionGraceTime == 0) {
                         if (this.unauthenticateUser(audience)) { // AUTHENTICATED USERS LIST CLEAR
                                 String name = audience.getOrDefault(Identity.NAME, null);
-                                this.logger.fine(name + "/" + id.get() + " has been removed from the authenticated players.");
+                                this.logger.info(name + "/" + id.get() + " has been removed from the authenticated players.");
                         }
                 } else {
                         this.previousConnectionInfos.put(id.get(), new PreviousConnectionInfo(System.currentTimeMillis(), audienceAddr));

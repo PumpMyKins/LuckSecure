@@ -57,7 +57,7 @@ public final class AuthCommand {
                     String playerName = sender.get(Identity.NAME).get();
 
                     String key = manager.generateUserTotpSecret(sender);
-                    String label = "LuckSecure" + (this.luckSecure.getConfig().getString("qrcode-label") != null ? "@" + this.luckSecure.getConfig().getString("qrcode-label") != null : "");
+                    String label = "LuckSecure" + (this.luckSecure.getConfig().getString("qrcode-label", null) != null ? "@" + this.luckSecure.getConfig().getString("qrcode-label", null) != null : "");
                     String url = AuthManager.generateUserTokenUrl(playerName, key, label);
 
                     sender.sendMessage(Util.mm(LuckSecure.LUCKSECURE_BASE_MSG + "<aqua>Import this <b><hover:show_text:'KEY:" + key + "'>KEY</hover></b> into your MFA App.</aqua>"));
