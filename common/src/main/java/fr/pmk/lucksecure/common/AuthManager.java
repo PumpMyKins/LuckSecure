@@ -9,6 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,6 +32,7 @@ import net.luckperms.api.query.QueryOptions;
 
 public class AuthManager {
         private List<UUID> authenticatedUsers;
+        private HashMap<UUID, PreviousConnectionInfo> previousConnectionInfos;
 
         protected final Logger logger;
         private final LuckSecureDatabase database;
@@ -39,6 +41,7 @@ public class AuthManager {
 
         protected AuthManager(Logger logger, LuckSecureDatabase database, LuckPerms luckPerms, Config config) {
                 this.authenticatedUsers = new ArrayList<>();
+                this.previousConnectionInfos = new HashMap<>();
 
                 this.logger = logger;
                 this.database = database;
@@ -49,19 +52,43 @@ public class AuthManager {
         // Login Event
         public final void onPlayerPostLoginEvent(Audience audience, InetAddress audienceAddr) {
                 Optional<UUID> id = audience.get(Identity.UUID);
-                if (id.isPresent() && this.unauthenticateUser(audience)) {
-                        String name = audience.getOrDefault(Identity.NAME, null);
-                        this.logger.fine(name + "/" + id.get() + " cleaned up from authenticated players. (disconnect event missed ?)");
+                if (id.isEmpty()) {
+                        return;
                 }
+
+                if (!this.isAuthenticated(audience)) {
+                        return;
+                }
+
+                PreviousConnectionInfo previous = this.previousConnectionInfos.get(id.get());
+                if (previous == null 
+                || !previous.getAddress().equals(audienceAddr) 
+                || (System.currentTimeMillis() - previous.getDisconnectionTime()) > (this.config.authDisconnectionGraceTime * 60000)) {
+                        if (this.unauthenticateUser(audience)) {
+                                String name = audience.getOrDefault(Identity.NAME, null);
+                                this.logger.fine(name + "/" + id.get() + " cleaned up from authenticated players. (disconnect event missed ?)");
+                        }
+                }
+
         }
 
         // Left Event
         public final void onPlayerDisconnectEvent(Audience audience, InetAddress audienceAddr) {
                 Optional<UUID> id = audience.get(Identity.UUID);
-                if (id.isPresent() && this.config.authDisconnectionGraceTime == 0 && this.unauthenticateUser(audience)) { // AUTHENTICATED USERS LIST CLEAR
-                        String name = audience.getOrDefault(Identity.NAME, null);
-                        this.logger.fine(name + "/" + id.get() + " has been removed from the authenticated players.");
+                if (id.isEmpty()) {
+                        return;
                 }
+
+                if (this.config.authDisconnectionGraceTime == 0) {
+                        if (this.unauthenticateUser(audience)) { // AUTHENTICATED USERS LIST CLEAR
+                                String name = audience.getOrDefault(Identity.NAME, null);
+                                this.logger.fine(name + "/" + id.get() + " has been removed from the authenticated players.");
+                        }
+                } else {
+                        this.previousConnectionInfos.put(id.get(), new PreviousConnectionInfo(System.currentTimeMillis(), audienceAddr));
+                }
+
+
         }
 
         public boolean isAuthenticated(Audience audience) {
@@ -204,4 +231,22 @@ public class AuthManager {
 
         }
 
+        public static final class PreviousConnectionInfo {
+        
+                private final long disconnectionTime;
+                private final InetAddress address;
+
+                public PreviousConnectionInfo(long disconnectionTime, InetAddress address) {
+                        this.disconnectionTime = disconnectionTime;
+                        this.address = address;
+                } 
+
+                public long getDisconnectionTime() {
+                    return this.disconnectionTime;
+                }
+
+                public InetAddress getAddress() {
+                    return this.address;
+                }
+        }
 }
