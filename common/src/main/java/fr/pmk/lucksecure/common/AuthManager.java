@@ -2,16 +2,20 @@ package fr.pmk.lucksecure.common;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
+
+import org.apache.commons.configuration2.YAMLConfiguration;
 
 import com.amdelamar.jotp.OTP;
 import com.amdelamar.jotp.type.Type;
@@ -20,7 +24,6 @@ import fr.pmk.lucksecure.common.database.LuckSecureDatabase;
 import fr.pmk.lucksecure.common.database.UserToken;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.identity.Identity;
-import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.context.Context;
 import net.luckperms.api.model.user.User;
@@ -28,60 +31,88 @@ import net.luckperms.api.node.Node;
 import net.luckperms.api.query.QueryOptions;
 
 public class AuthManager {
-        private List<UUID> authentificatedUsers;
+        private List<UUID> authenticatedUsers;
+        private HashMap<UUID, PreviousConnectionInfo> previousConnectionInfos;
 
-        protected Logger logger;
-        private LuckSecureDatabase database;
-        protected LuckPerms luckPerms;
+        protected final Logger logger;
+        private final LuckSecureDatabase database;
+        protected final LuckPerms luckPerms;
+        private final Config config;
 
-        protected AuthManager(Logger logger, LuckSecureDatabase database, LuckPerms luckPerms) {
-                this.authentificatedUsers = new ArrayList<>();
+        protected AuthManager(Logger logger, LuckSecureDatabase database, LuckPerms luckPerms, Config config) {
+                this.authenticatedUsers = new ArrayList<>();
+                this.previousConnectionInfos = new HashMap<>();
 
                 this.logger = logger;
                 this.database = database;
                 this.luckPerms = luckPerms;
+                this.config = config;
         }
 
         // Login Event
-        public final void onPlayerPostLoginEvent(Audience audience) {
+        public final void onPlayerPostLoginEvent(Audience audience, InetAddress audienceAddr) {
                 Optional<UUID> id = audience.get(Identity.UUID);
-                if (id.isPresent() && this.unauthenticatedUser(audience)) {
-                        String name = audience.getOrDefault(Identity.NAME, null);
-                        this.logger.fine(name + "/" + id.get() + " cleaned up from authenticated players. (disconnect event missed ?)");
+                if (id.isEmpty()) {
+                        return;
                 }
+
+                if (!this.isAuthenticated(audience)) {
+                        return;
+                }
+
+                PreviousConnectionInfo previous = this.previousConnectionInfos.get(id.get());
+                if (previous == null 
+                || !previous.getAddress().equals(audienceAddr) 
+                || (System.currentTimeMillis() - previous.getDisconnectionTime()) > (this.config.authDisconnectionGraceTime * 60000)) {
+                        if (this.unauthenticateUser(audience)) {
+                                String name = audience.getOrDefault(Identity.NAME, null);
+                                this.logger.info(name + "/" + id.get() + " cleaned up from authenticated players.");
+                        }
+                }
+
         }
 
         // Left Event
-        public final void onPlayerDisconnectEvent(Audience audience) {
+        public final void onPlayerDisconnectEvent(Audience audience, InetAddress audienceAddr) {
                 Optional<UUID> id = audience.get(Identity.UUID);
-                if (id.isPresent() && this.unauthenticatedUser(audience)) { // AUTHENTICATED USERS LIST CLEAR
-                        String name = audience.getOrDefault(Identity.NAME, null);
-                        this.logger.fine(name + "/" + id.get() + " has been removed from the authenticated players.");
+                if (id.isEmpty()) {
+                        return;
                 }
+
+                if (this.config.authDisconnectionGraceTime == 0) {
+                        if (this.unauthenticateUser(audience)) { // AUTHENTICATED USERS LIST CLEAR
+                                String name = audience.getOrDefault(Identity.NAME, null);
+                                this.logger.info(name + "/" + id.get() + " has been removed from the authenticated players.");
+                        }
+                } else {
+                        this.previousConnectionInfos.put(id.get(), new PreviousConnectionInfo(System.currentTimeMillis(), audienceAddr));
+                }
+
+
         }
 
         public boolean isAuthenticated(Audience audience) {
                 Optional<UUID> id = audience.get(Identity.UUID);
                 if (id.isPresent()) {
-                        return this.authentificatedUsers.contains(id.get());
+                        return this.authenticatedUsers.contains(id.get());
                 }
                 return false;
         }
 
-        public boolean authenticatedUser(Audience audience) {
+        public boolean authenticateUser(Audience audience) {
                 Optional<UUID> id = audience.get(Identity.UUID);
                 if (id.isEmpty()) {
                         throw new IllegalStateException("Audiance UUID can't be empty");
                 }
-                return this.authentificatedUsers.add(id.get());
+                return this.authenticatedUsers.add(id.get());
         }
 
-        public boolean unauthenticatedUser(Audience audience) {
+        public boolean unauthenticateUser(Audience audience) {
                 Optional<UUID> id = audience.get(Identity.UUID);
                 if (id.isEmpty()) {
                         throw new IllegalStateException("Audiance UUID can't be empty");
                 }
-                return this.authentificatedUsers.remove(id.get());
+                return this.authenticatedUsers.remove(id.get());
         }
 
         public final boolean doesUserHavePermWithAuthContext(Audience audience) { // CHECK IF SOME OF USER'S GROUP OR PERMISSION NEED CONTEXT AUTHENTICATED
@@ -135,7 +166,7 @@ public class AuthManager {
                         throw new IllegalStateException("Audiance UUID can't be empty");
                 }
 
-                this.onPlayerDisconnectEvent(audience);
+                this.unauthenticateUser(audience);
                 return this.database.getTotpDao().deleteById(id.get()) == 1;
         }
 
@@ -151,7 +182,7 @@ public class AuthManager {
                 boolean result = false;
                 if (OTP.verify(secret, OTP.timeInHex(System.currentTimeMillis()), code, 6, Type.TOTP)) {
                         result = true;
-                        this.authentificatedUsers.add(id.get()); // ADD THE PLAYER TO THE AUTHENTICATED USERS
+                        this.authenticatedUsers.add(id.get()); // ADD THE PLAYER TO THE AUTHENTICATED USERS
                         this.logger.info(name + "/" + id.get() + " authentication succed.");
                 } else {
                         this.logger.warning(name + "/" + id.get() + " authentication attempt failed.");
@@ -180,4 +211,42 @@ public class AuthManager {
                 return "https://api.qrserver.com/v1/create-qr-code/?data=" + url;
         }
 
+        public static final class Config {
+        
+                private final int authDisconnectionGraceTime;
+                private final boolean authIpAddrMatch;
+
+                public Config(YAMLConfiguration config) {
+                        this.authDisconnectionGraceTime = config.getInt("authentication_disconnection_grace_time", 0);
+                        this.authIpAddrMatch = config.getBoolean("authentication_ip_addr_match", true);
+                }
+
+                public int getAuthDisconnectionGraceTime() {
+                    return this.authDisconnectionGraceTime;
+                }
+
+                public boolean getAuthIpAddrMatch() {
+                        return this.authIpAddrMatch;
+                }
+
+        }
+
+        public static final class PreviousConnectionInfo {
+        
+                private final long disconnectionTime;
+                private final InetAddress address;
+
+                public PreviousConnectionInfo(long disconnectionTime, InetAddress address) {
+                        this.disconnectionTime = disconnectionTime;
+                        this.address = address;
+                } 
+
+                public long getDisconnectionTime() {
+                    return this.disconnectionTime;
+                }
+
+                public InetAddress getAddress() {
+                    return this.address;
+                }
+        }
 }

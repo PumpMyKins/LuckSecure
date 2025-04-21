@@ -1,6 +1,23 @@
-# qrcode-label: "My Secured Server"
+# Redis required for authentication sync when running behind velocity
 redis:
   host: "localhost"
   port: 6379
-  user: "secret"
-  password: "secret!"
+  # user optional
+  # user: "secret"
+  # password optional
+  # password: "secret!"
+
+#
+# Configurations below is inactive if running behind velocity
+#
+
+# Custom label qrcode label
+# qrcode-label: "My Secured Server"
+
+# time (in minutes) before authentication expires after disconnection
+# 0 = authentication require after each connection
+authentication_disconnection_grace_time: 0
+
+# Revoke authentication if ip addr different than previous connection
+# Only active if authentication_disconnection_grace_time not 0
+authentication_ip_addr_match: true

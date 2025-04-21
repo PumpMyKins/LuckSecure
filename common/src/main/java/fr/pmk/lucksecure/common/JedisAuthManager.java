@@ -10,6 +10,8 @@ import fr.pmk.lucksecure.common.database.LuckSecureDatabase;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.identity.Identity;
 import net.luckperms.api.LuckPerms;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisPooled;
 
 public class JedisAuthManager extends AuthManager {
@@ -18,13 +20,25 @@ public class JedisAuthManager extends AuthManager {
 
         private JedisPooled jedis;
 
-        protected JedisAuthManager(Logger logger, LuckSecureDatabase database, LuckPerms luckPerms, JedisPooled jedis) {
-                super(logger, database, luckPerms);
+        protected JedisAuthManager(Logger logger, LuckSecureDatabase database, LuckPerms luckPerms, JedisPooled jedis, Config config) {
+                super(logger, database, luckPerms, config);
                 this.jedis = jedis;
         }
 
         public final static JedisPooled getJedisFromConfig(YAMLConfiguration config) {
-                return null;
+                String host = config.getString("redis.host");
+                int port = config.getInt("redis.port"); 
+                HostAndPort address = new HostAndPort(host, port);
+
+                String user = config.getString("redis.user", null);
+                String password = config.getString("redis.password", null);
+
+                DefaultJedisClientConfig.Builder jedisConfig = DefaultJedisClientConfig.builder();
+                if (user != null && password != null) {
+                        jedisConfig = jedisConfig.user(user).password(password);
+                }
+
+                return new JedisPooled(address, jedisConfig.build());
         }
 
         @Override
@@ -37,7 +51,7 @@ public class JedisAuthManager extends AuthManager {
         }
 
         @Override
-        public boolean authenticatedUser(Audience audience) {
+        public boolean authenticateUser(Audience audience) {
                 Optional<UUID> id = audience.get(Identity.UUID);
                 if (id.isEmpty()) {
                         throw new IllegalStateException("Audiance UUID can't be empty");
@@ -46,7 +60,7 @@ public class JedisAuthManager extends AuthManager {
         }
 
         @Override
-        public boolean unauthenticatedUser(Audience audience) {
+        public boolean unauthenticateUser(Audience audience) {
                 Optional<UUID> id = audience.get(Identity.UUID);
                 if (id.isEmpty()) {
                         throw new IllegalStateException("Audiance UUID can't be empty");

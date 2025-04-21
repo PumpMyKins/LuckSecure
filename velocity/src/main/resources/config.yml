@@ -1,7 +1,22 @@
-qrcode-label: "My Secured Server"
-syncAuthUsers: false
+# Enable authentication sync
+sync_authentication: false
+
+# Redis required for authentication sync
 redis:
   host: "localhost"
   port: 6379
-  user: "secret"
-  password: "secret!"
+  # user optional
+  # user: "secret"
+  # password optional
+  # password: "secret!"
+
+# Custom label qrcode label
+# qrcode-label: "My Secured Server"
+
+# time (in minutes) before authentication expires after disconnection
+# 0 = authentication require after each connection
+authentication_disconnection_grace_time: 0
+
+# Revoke authentication if ip addr different than previous connection
+# Only active if authentication_disconnection_grace_time not 0
+authentication_ip_addr_match: true

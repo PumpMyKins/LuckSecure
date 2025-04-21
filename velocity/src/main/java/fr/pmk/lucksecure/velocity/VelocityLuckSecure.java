@@ -35,8 +35,8 @@ public class VelocityLuckSecure extends LuckSecure {
 
     @Override
     protected void registerListeners() {
-        this.main.getServer().getEventManager().register(this.main, LoginEvent.class, event -> manager.onPlayerPostLoginEvent(event.getPlayer()));
-        this.main.getServer().getEventManager().register(this.main, DisconnectEvent.class, event -> manager.onPlayerDisconnectEvent(event.getPlayer()));
+        this.main.getServer().getEventManager().register(this.main, LoginEvent.class, event -> manager.onPlayerPostLoginEvent(event.getPlayer(), event.getPlayer().getRemoteAddress().getAddress()));
+        this.main.getServer().getEventManager().register(this.main, DisconnectEvent.class, event -> manager.onPlayerDisconnectEvent(event.getPlayer(), event.getPlayer().getRemoteAddress().getAddress()));
     }
 
     @Override

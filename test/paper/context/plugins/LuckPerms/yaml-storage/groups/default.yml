@@ -1,0 +1,8 @@
+name: default
+permissions:
+- lsauth.cmd:
+    value: true
+- minecraft.command.list:
+    value: true
+    context:
+      lucksecure: authenticated
